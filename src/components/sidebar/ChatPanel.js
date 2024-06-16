@@ -1,7 +1,8 @@
-import { PaperAirplaneIcon } from "@heroicons/react/solid";
+import { PaperAirplaneIcon, PaperClipIcon } from "@heroicons/react/solid";
 import { useMeeting, usePubSub } from "@videosdk.live/react-sdk";
 import React, { useEffect, useRef, useState } from "react";
 import { formatAMPM, json_verify, nameTructed } from "../../utils/helper";
+import axios from 'axios';
 
 const ChatMessage = ({ senderId, senderName, text, timestamp }) => {
   const mMeeting = useMeeting();
@@ -40,6 +41,7 @@ const ChatMessage = ({ senderId, senderName, text, timestamp }) => {
 
 const ChatInput = ({ inputHeight }) => {
   const [message, setMessage] = useState("");
+  const [file, setFile] = useState(null);
   const { publish } = usePubSub("CHAT");
   const input = useRef();
 
@@ -51,7 +53,7 @@ const ChatInput = ({ inputHeight }) => {
       <div class="relative  w-full">
         <span class="absolute inset-y-0 right-0 flex mr-2 rotate-90 ">
           <button
-            disabled={message.length < 2}
+            disabled={message.length < 1}
             type="submit"
             className="p-1 focus:outline-none focus:shadow-outline"
             onClick={() => {
@@ -67,7 +69,7 @@ const ChatInput = ({ inputHeight }) => {
           >
             <PaperAirplaneIcon
               className={`w-6 h-6 ${
-                message.length < 2 ? "text-gray-500 " : "text-white"
+                message.length < 1 ? "text-gray-500 " : "text-white"
               }`}
             />
           </button>
