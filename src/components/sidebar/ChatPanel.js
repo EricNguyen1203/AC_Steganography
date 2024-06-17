@@ -38,14 +38,118 @@ const ChatMessage = ({ senderId, senderName, text, timestamp }) => {
   );
 };
 
+const ChatFileMassage = ({ senderId, senderName, file, timestamp }) => {
+  const mMeeting = useMeeting();
+  const localParticipantId = mMeeting?.localParticipant?.id;
+  const localSender = localParticipantId === senderId;
+
+  return (
+    <div
+      className={`flex ${localSender ? "justify-end" : "justify-start"} mt-4`}
+      style={{
+        maxWidth: "100%",
+      }}
+    >
+      <div
+        className={`flex ${localSender ? "items-end" : "items-start"
+          } flex-col py-1 px-2 rounded-md bg-gray-700`}
+      >
+        <p style={{ color: "#ffffff80" }}>
+          {localSender ? "You" : nameTructed(senderName, 15)}
+        </p>
+        <div>
+          <p className="inline-block whitespace-pre-wrap break-words text-right text-white">
+            {file}
+          </p>
+        </div>
+        <div className="mt-1">
+          <p className="text-xs italic" style={{ color: "#ffffff80" }}>
+            {formatAMPM(new Date(timestamp))}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const InputFile = ({ onFileSelect }) => {
+  const inputFileRef = useRef(null);
+
+  const handleClick = () => {
+    inputFileRef.current.click();
+  };
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileUpload = () => {
+    if (selectedFile) {
+      onFileSelect(selectedFile);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+    // if (selectedFile) {
+    //   onFileSelect(selectedFile);
+    // }
+  };
+
+  return (
+    <div>
+      <span className="absolute inset-y-0 right-8 flex items-center mr-2">
+        <button
+          type="button"
+          className="p-1 focus:outline-none focus:shadow-outline"
+          onClick={handleFileUpload}
+        >
+          <PaperClipIcon className="w-6 h-6 text-gray-500" />
+        </button>
+      </span>
+      <input
+        type="file"
+        ref={inputFileRef}
+        onChange={handleFileChange}
+      />
+    </div>
+  );
+};
+
+
 const ChatInput = ({ inputHeight }) => {
   const [message, setMessage] = useState("");
   const [file, setFile] = useState(null);
-  const inputRef = useRef(null);
+
+  // const handleFileChange = (event) => {
+  //   setFile(event.target.files[0]);
+  // };
+
+  const inputFileRef = useRef(null);
 
   const handleClick = () => {
-    inputRef.current.click();
+    inputFileRef.current.click();
   };
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileUpload = () => {
+    if (selectedFile) {
+      handleFileSelect(selectedFile);
+    }
+  };
+
+
+
+  const handleFileSelect = (file) => {
+    // Xử lý file đã chọn
+    console.log('File đã chọn:', file);
+    // const newMessage = {
+    //   type: 'file',
+    //   content: file,
+    //   timestamp: new Date(),
+    // };
+    setFile(file);
+  };
+
 
   const { publish } = usePubSub("CHAT");
   const input = useRef();
@@ -98,25 +202,44 @@ const ChatInput = ({ inputHeight }) => {
                 }, 100);
                 input.current?.focus();
               }
+              if (file) {
+                console.log("Publish file:", file);
+                publish(file.name, { persist: true });
+                setTimeout(() => {
+                  setFile(null);
+                }, 100);
+                input.current?.focus();
+              }
             }
           }}
         />
-        <span className="absolute inset-y-0 right-10 flex items-center mr-2">
+        {/* <InputFile onFileSelect={handleFileSelect} /> */}
+        <span className="absolute inset-y-0 right-8 flex items-center mr-2">
           <button
             type="button"
             className="p-1 focus:outline-none focus:shadow-outline"
-            onClick={handleClick}
+            onClick={() =>{
+              handleClick();
+              input.current?.focus();
+            }}
           >
             <PaperClipIcon className="w-6 h-6 text-gray-500" />
           </button>
         </span>
         <input
           type="file"
-          ref={inputRef}
+          ref={inputFileRef}
           style={{ display: 'none' }}
+          onChange={(e) => {
+            setSelectedFile(e.target.files[0]);
+            if (selectedFile) {
+              handleFileSelect(selectedFile);
+            }
+          }}
+          
         />
       </div>
-    </div>
+    </div >
   );
 };
 
